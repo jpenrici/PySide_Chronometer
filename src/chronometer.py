@@ -33,6 +33,8 @@ class Window(QMainWindow):
         timer.timeout.connect(self.showTime)
         timer.start(1000)
 
+        self.running   = False
+
         self.seconds   = 0
         self.limit     = minutes * 60
         self.tolerance = 70 / 100
@@ -40,11 +42,12 @@ class Window(QMainWindow):
         self.button1 = QPushButton("Start")
         self.button1.setFont(QFont('Arial', 48))
         self.button1.setStyleSheet("background-color : blue; color : white;")
-        self.button1.pressed.connect(self.restart)
+        self.button1.clicked.connect(self.restart)
 
         self.button2 = QPushButton()
         self.button2.setFixedHeight(10)
         self.button2.setStyleSheet("background-color : blue;")
+        self.button2.clicked.connect(self.stop)
 
         layout = QVBoxLayout()
         layout.addWidget(self.button1)
@@ -61,7 +64,14 @@ class Window(QMainWindow):
 
     def restart(self):
         self.seconds = 0
-        self.button1.setText("-- : --")            
+        self.running = True
+        self.button1.setText("-- : --")
+        print("Restart ...")
+
+    def stop(self):
+        self.running = False
+        self.button1.setStyleSheet("background-color : blue;")
+        print("Stop!")
 
     def lineargradient(self, color1: QColor, color2: QColor, stop: float = 1):
         stop = 0.000 if stop < 0 else stop
@@ -70,8 +80,9 @@ class Window(QMainWindow):
             color1=color1.name(), color2=color2.name(), stop=stop)
 
     def showTime(self):
-        if self.button1.text() == "Start":
+        if not self.running:
             return
+        # Counter
         self.seconds += 1
         # Button 1
         color1 = QColor(0, 0, 0)
@@ -87,6 +98,7 @@ class Window(QMainWindow):
         color2 = QColor(255, 0, 0)
         self.button2.setStyleSheet(self.lineargradient(color2, color1, self.seconds / self.limit))
 
+
 def run(minutes: int):
     if minutes < 0:
         minutes = 1
@@ -95,5 +107,56 @@ def run(minutes: int):
     w.show()
     sys.exit(app.exec())
 
-if __name__ == "__main__":
-    run(1) # test
+
+def validate(args):
+    minutes = None
+    keyword = "minutes="
+    for arg in args:
+        if arg[0:8] == keyword:
+            try:
+                minutes = int(arg.replace(keyword, ""))
+            except:
+                # print("Invalid entry in minutes option!")
+                pass
+    return minutes
+
+
+def main(args):
+    # Check
+    entry = validate(args)
+
+    # Run
+    if entry is not None:
+        run(minutes=entry)
+    else:
+        print("Invalid entry!")
+        print("Use: python3 chronometer.py minutes=1")
+
+
+def test():
+    # Inputs
+    tests = [
+        [],
+        ["test"],
+        ["test", "minutes=-1", "test"],
+        ["minutes=-1"],
+        ["minutes=0"],
+        ["minutes=61"],
+        ["minutes=a5"],
+        ["minutes= 5"],
+        ["minutes=5"]
+    ]
+
+    for i in tests:
+        print("{} : {}".format(i, validate(i)))
+
+
+if __name__ == '__main__':
+    # Input validation test.
+    # test()
+
+    # Test.
+    # main(["minutes=1"])
+
+    # Run 
+    main(sys.argv)
