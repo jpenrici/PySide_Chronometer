@@ -43,11 +43,15 @@ class Window(QMainWindow):
         self.button1.setFont(QFont('Arial', 48))
         self.button1.setStyleSheet("background-color : blue; color : white;")
         self.button1.clicked.connect(self.restart)
+        self.button1.setToolTip("Click to reset counter!")
 
         self.button2 = QPushButton()
         self.button2.setFixedHeight(10)
         self.button2.setStyleSheet("background-color : blue;")
         self.button2.clicked.connect(self.stop)
+        self.button2.setToolTip("Click to stop counter!")
+
+        self.setToolTip("Alert will be activated after {} minutes!".format(minutes))
 
         layout = QVBoxLayout()
         layout.addWidget(self.button1)
